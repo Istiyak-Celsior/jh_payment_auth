@@ -101,13 +101,19 @@ namespace jh_payment_auth.Services
             {
                 var client = _clientFactory.CreateClient("PaymentDb-Microservice");
                 var json = JsonSerializer.Serialize(data);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var body = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PutAsync(url, content);
+                var response = await client.PutAsync(url, body);
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync();
 
-                return JsonSerializer.Deserialize<TResponse>(result, _jsonOptions);
+                var result = JsonSerializer.Deserialize<MicroserviceResponse<TResponse>>(content, _jsonOptions);
+                if(result == null)
+                {
+                    throw new Exception("Fail to convert the response");
+                }
+
+                return await Task.FromResult(result.ResponseBody);
             }
             catch (Exception ex)
             {

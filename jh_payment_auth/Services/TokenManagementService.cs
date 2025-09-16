@@ -42,7 +42,7 @@ namespace jh_payment_auth.Services
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(120),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

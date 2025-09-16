@@ -48,7 +48,7 @@ namespace jh_payment_auth.Controllers
             try
             {
                 _logger.LogInformation("Received user registration request for email: {Email}", request.Email);
-                
+
                 apiResponse = await _userService.RegisterUserAsync(request);
 
                 if (apiResponse.StatusCode != System.Net.HttpStatusCode.OK)
@@ -56,11 +56,11 @@ namespace jh_payment_auth.Controllers
                     _logger.LogError("User registration failed: {Errors}");
                     apiResponse.Message = UserErrorMessages.UserRegistrationFailed;
                     return StatusCode(((int)apiResponse.StatusCode), apiResponse);
-                    
+
                 }
                 else
                 {
-                    _logger.LogInformation("User registration successful for email: {Email}", request.Email);                    
+                    _logger.LogInformation("User registration successful for email: {Email}", request.Email);
                     apiResponse.Message = UserErrorMessages.UserRegistrationSuccess;
                     return Ok(apiResponse);
                 }
@@ -71,6 +71,31 @@ namespace jh_payment_auth.Controllers
                 apiResponse = ErrorResponseModel.InternalServerError(UserErrorMessages.ErrorOccurredWhileRegistringUser, UserErrorMessages.ErrorOccurredWhileRegistringUserCode);
                 return StatusCode(((int)apiResponse.StatusCode), apiResponse);
             }
+        }
+
+        /// <summary>
+        /// List user by page
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="searchString"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
+        [HttpGet("list-users/{pageSize}/{pageNumber}/{searchString}/{sortBy}")]
+        public async Task<ResponseModel> ListUsers([FromRoute] int pageSize, [FromRoute] int pageNumber, [FromRoute] string searchString, [FromRoute] string sortBy)
+        {
+            return await _userService.ListUserAsync(pageSize, pageNumber, searchString, sortBy);
+        }
+
+        /// <summary>
+        /// Load dashboard
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("load-dashboard/{userId}")]
+        public async Task<ResponseModel> LoadDashboard([FromRoute] int userId)
+        {
+            return await _userService.LoadDashboardAsync(userId);
         }
     }
 }

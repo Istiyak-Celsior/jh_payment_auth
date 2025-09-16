@@ -1,10 +1,5 @@
 ﻿using jh_payment_auth.Entity;
 using jh_payment_auth.Models;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace jh_payment_auth.Services.Services
 {
@@ -40,18 +35,16 @@ namespace jh_payment_auth.Services.Services
         /// <summary>
         /// Validates the user credentials against a predefined list of users.
         /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<bool> ValidateUser(string username, string password)
+        public async Task<User?> ValidateUser(LoginRequest request)
         {
-            var user = await _httpClientService.GetAsync<User>($"v1/perops/User/getuser/{username}");
-            if (user == null)
+            if (request == null)
             {
-                return true;
+                throw new ArgumentNullException(nameof(request));
             }
 
-            return false;
+            return await _httpClientService.PutAsync<LoginRequest, User>($"v1/perops/User/getuser", request);
         }
 
         /// <summary>
@@ -62,20 +55,22 @@ namespace jh_payment_auth.Services.Services
         /// <exception cref="ArgumentNullException"></exception>
         public async Task<ResponseModel> Login(LoginRequest request)
         {
-            if (!await ValidateUser(request.Username, request.Password))
+            var user = await ValidateUser(request);
+            if (user == null)
             {
                 return ErrorResponseModel.Fail("Invalid username or password", "AUT001");
             }
 
             var validTo = _config["Jwt:ExpiryInSec"] ?? throw new ArgumentNullException("Jwt:expiry not found in configuration.");
 
-            var jwtToken = _tokenManagement.GenerateJwtToken(request.Username);
+            var jwtToken = _tokenManagement.GenerateJwtToken(request.Email);
 
             return ResponseModel.Ok(
                  new AuthResponse
                  {
                      Token = jwtToken,
-                     Expiration = validTo
+                     Expiration = validTo,
+                     UserDetail = user
                  },
                  "Success"
             );

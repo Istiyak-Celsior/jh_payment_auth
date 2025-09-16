@@ -42,7 +42,7 @@ namespace jh_payment_auth.Services
                 if (validationErrors.Count > 0)
                 {
                     _logger.LogError("User registration validation failed: {Errors}", string.Join(", ", validationErrors));
-                    return ErrorResponseModel.BadRequest(UserErrorMessages.UserValidationFailed+" Validation Errors: \n"+ string.Join(", ", validationErrors), UserErrorMessages.UserValidationFailedCode);                    
+                    return ErrorResponseModel.BadRequest(UserErrorMessages.UserValidationFailed + " Validation Errors: \n" + string.Join(", ", validationErrors), UserErrorMessages.UserValidationFailedCode);
                 }
 
                 // Step 2: Check for existing user.
@@ -66,7 +66,7 @@ namespace jh_payment_auth.Services
                     Password = hashedPassword,
                     Age = request.Age,
                     Mobile = request.PhoneNumber,
-                    Address = request.Address.Street+", "+request.Address.City,
+                    Address = request.Address.Street + ", " + request.Address.City,
                     AccountNumber = request.AccountDetails.AccountNumber,
                     BankName = request.AccountDetails.BankName,
                     IFCCode = request.AccountDetails.IFSCCode,
@@ -82,7 +82,7 @@ namespace jh_payment_auth.Services
                 if (response == null)
                 {
                     _logger.LogError("User registration failed for email: {Email} and Account Number: {AccountNumber}", request.Email, request.AccountDetails.AccountNumber);
-                    return ErrorResponseModel.InternalServerError(UserErrorMessages.UserRegistrationFailed,UserErrorMessages.UserRegistrationFailedCode);
+                    return ErrorResponseModel.InternalServerError(UserErrorMessages.UserRegistrationFailed, UserErrorMessages.UserRegistrationFailedCode);
                 }
 
                 _logger.LogInformation("User with email: {Email} and Account Number: {AccountNumber} registered successfully.", request.Email, request.AccountDetails.AccountNumber);
@@ -93,14 +93,14 @@ namespace jh_payment_auth.Services
                 return ErrorResponseModel.InternalServerError(UserErrorMessages.ErrorOccurredWhileRegistringUser, UserErrorMessages.ErrorOccurredWhileRegistringUserCode);
             }
 
-            return ResponseModel.Ok(request,UserErrorMessages.UserRegistrationSuccess);
+            return ResponseModel.Ok(request, UserErrorMessages.UserRegistrationSuccess);
         }
 
         private async Task<ResponseModel> AddUserData(User user)
         {
             try
             {
-                return await _httpClientService.PostAsync<User,ResponseModel>("v1/perops/user/adduser", user);                
+                return await _httpClientService.PostAsync<User, ResponseModel>("v1/perops/user/adduser", user);
             }
             catch (Exception ex)
             {
@@ -120,6 +120,79 @@ namespace jh_payment_auth.Services
                 _logger.LogError(ex, "User not found");
             }
             return null;
+        }
+
+        /// <summary>
+        /// List userpage service
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="searchString"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
+        public async Task<ResponseModel> ListUserAsync(int pageSize, int pageNumber, string searchString, string sortBy)
+        {
+            try
+            {
+                _logger.LogInformation("Getting user page detail for page number: " + pageNumber);
+
+                // Step 2: Check for existing user.
+                List<User> users = await GetUserByPageAsync(pageSize, pageNumber, searchString, sortBy);
+                _logger.LogInformation("User list retrieved successfully");
+
+                return ResponseModel.Ok(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got list user error.");
+                return ErrorResponseModel.InternalServerError(UserErrorMessages.ErrorOccurredWhileRegistringUser, UserErrorMessages.ErrorOccurredWhileRegistringUserCode);
+            }
+        }
+
+        /// <summary>
+        /// Load dashboard service
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<ResponseModel> LoadDashboardAsync(int userId)
+        {
+            try
+            {
+                _logger.LogInformation("Getting user dashboard data for user id: " + userId);
+
+                // Step 1: Get user list page.
+                List<User> users = await GetUserByPageAsync(10, 1, "1=1", "1=1");
+                _logger.LogInformation("User list retrieved successfully");
+
+                Dictionary<string, dynamic> dashboardData = new Dictionary<string, dynamic>();
+                dashboardData.Add("user-list", users);
+
+                return ResponseModel.Ok(dashboardData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Got list user error.");
+                return ErrorResponseModel.InternalServerError(UserErrorMessages.ErrorOccurredWhileRegistringUser, UserErrorMessages.ErrorOccurredWhileRegistringUserCode);
+            }
+        }
+
+        private async Task<List<User>> GetUserByPageAsync(int pageSize, int pageNumber, string searchString, string sortBy)
+        {
+            try
+            {
+                var result = await _httpClientService.GetAsync<List<User>>($"v1/perops/user/getuserbypage/{pageSize}/{pageNumber}/{searchString}/{sortBy}");
+                if (result == null)
+                {
+                    throw new Exception("Fail to get user list.");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "User not found");
+                throw new Exception("Fail to get user list.");
+            }
         }
     }
 }

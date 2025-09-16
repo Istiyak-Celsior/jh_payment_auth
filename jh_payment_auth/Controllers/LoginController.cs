@@ -1,4 +1,5 @@
-﻿using jh_payment_auth.Services;
+﻿using jh_payment_auth.Models;
+using jh_payment_auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,11 +30,9 @@ namespace jh_payment_auth.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("signin")]
-        public IActionResult Login([FromBody] Models.LoginRequest request)
+        public async Task<ResponseModel> Login([FromBody] LoginRequest request)
         {
-            var result = _authService.Login(request);
-            if (result == null) return Unauthorized("Invalid username or password");
-            return Ok(result);
+            return await _authService.Login(request);
         }
 
         /// <summary>
