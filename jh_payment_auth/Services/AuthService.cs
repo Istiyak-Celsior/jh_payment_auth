@@ -61,15 +61,15 @@ namespace jh_payment_auth.Services.Services
                 return ErrorResponseModel.Fail("Invalid username or password", "AUT001");
             }
 
-            var validTo = _config["Jwt:ExpiryInSec"] ?? throw new ArgumentNullException("Jwt:expiry not found in configuration.");
-
-            var jwtToken = _tokenManagement.GenerateJwtToken(request.Email);
+            var jwtToken = _tokenManagement.GenerateJwtToken(request.Username);
+            var refreshToken = _tokenManagement.CreateRefreshToken(request.Username);
 
             return ResponseModel.Ok(
                  new AuthResponse
                  {
-                     Token = jwtToken,
-                     Expiration = validTo,
+                     AccessToken = jwtToken,
+                     RefreshToken = refreshToken.RefreshToken,
+                     Expiration = refreshToken.ExpiryDate,
                      UserDetail = user
                  },
                  "Success"

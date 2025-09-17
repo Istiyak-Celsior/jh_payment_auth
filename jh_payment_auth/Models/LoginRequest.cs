@@ -26,16 +26,16 @@ namespace jh_payment_auth.Models
         /// <summary>
         /// Represents the authentication token issued to the user upon successful login.
         /// </summary>
-        public string Token { get; set; }
+        public required string AccessToken { get; set; }
 
         /// <summary>
-        /// Represents the expiration time of the authentication token.
+        /// Represents the refresh token issued to the user for obtaining a new access token when the current one expires.
         /// </summary>
-        public string Expiration { get; set; }
+        public required string RefreshToken { get; set; }
 
         /// <summary>
-        /// User detail
+        /// Represents the expiration datetime of the authentication refresh token.
         /// </summary>
-        public User UserDetail { set; get; }
+        public DateTime Expiration { get; set; }
     }
 }
