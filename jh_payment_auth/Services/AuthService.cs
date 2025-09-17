@@ -61,8 +61,8 @@ namespace jh_payment_auth.Services.Services
                 return ErrorResponseModel.Fail("Invalid username or password", "AUT001");
             }
 
-            var jwtToken = _tokenManagement.GenerateJwtToken(request.Username);
-            var refreshToken = _tokenManagement.CreateRefreshToken(request.Username);
+            var jwtToken = _tokenManagement.GenerateJwtToken(request.Email);
+            var refreshToken = _tokenManagement.CreateRefreshToken(request.Email);
 
             return ResponseModel.Ok(
                  new AuthResponse

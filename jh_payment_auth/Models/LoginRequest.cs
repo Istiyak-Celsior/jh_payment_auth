@@ -15,7 +15,7 @@ namespace jh_payment_auth.Models
         /// <summary>
         /// Represents the password of the user attempting to log in.
         /// </summary>
-        public string Password { get; set; }
+        public string Password { get; set; }        
     }
 
     /// <summary>
@@ -37,5 +37,10 @@ namespace jh_payment_auth.Models
         /// Represents the expiration datetime of the authentication refresh token.
         /// </summary>
         public DateTime Expiration { get; set; }
+
+        /// <summary>
+        /// User to return the user object
+        /// </summary>
+        public User UserDetail { get; set; }
     }
 }
